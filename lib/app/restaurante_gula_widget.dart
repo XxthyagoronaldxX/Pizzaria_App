@@ -1,5 +1,3 @@
-import 'dart:js_interop';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,7 +11,7 @@ class RestauranteGulaWidget extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: "RestauranteGula",
       theme: ThemeData(
-        primarySwatch: Colors.purple,
+        primarySwatch: Colors.amber,
         textTheme: TextTheme(
           titleMedium: GoogleFonts.quicksand().copyWith(
             fontSize: 24,

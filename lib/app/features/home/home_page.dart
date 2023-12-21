@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:restaurantegulaapp/app/features/home/widgets/item_product_card_widget.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_modular/flutter_modular.dart';
+import 'package:restaurantegulaapp/app/domain/models/product_model.dart';
+import 'package:restaurantegulaapp/app/features/home/home_controller.dart';
+import 'package:restaurantegulaapp/app/features/home/widgets/category_list_widget.dart';
+import 'package:restaurantegulaapp/app/features/home/widgets/header_options_widget.dart';
+import 'package:restaurantegulaapp/app/features/home/widgets/product_card_widget.dart';
+import 'package:restaurantegulaapp/app/features/home/widgets/search_widget.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,153 +18,95 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   void initState() {
-    // TODO: Remover barrar de informação do Celular.
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = Modular.get<HomeController>();
     final mediaQuery = MediaQuery.of(context);
-    double avaibleHeight = mediaQuery.size.height - kToolbarHeight;
+    final themeData = Theme.of(context);
+
+    double avaibleHeight = mediaQuery.size.height;
     double avaibleWidth = mediaQuery.size.width;
     double spacingHeight = avaibleHeight * 0.04;
-    ThemeData themeData = Theme.of(context);
 
     return Scaffold(
-      body: Container(
-        padding: const EdgeInsets.all(50),
-        height: avaibleHeight,
-        width: avaibleWidth,
-        child: Column(
-          children: [
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CircleAvatar(
-                  child: Icon(Icons.person),
+      backgroundColor: const Color.fromRGBO(251, 251, 251, 1),
+      body: SingleChildScrollView(
+        child: Container(
+          padding: const EdgeInsets.all(40),
+          height: avaibleHeight,
+          width: avaibleWidth,
+          child: Stack(
+            children: [
+              Positioned(
+                bottom: 100,
+                child: Transform(
+                  transform: Matrix4.diagonal3Values(20, 20, 1),
+                  child: const CircleAvatar(
+                    backgroundColor: Colors.redAccent,
+                  ),
                 ),
-                CircleAvatar(
-                  child: Icon(Icons.add_shopping_cart),
+              ),
+              Positioned(
+                top: 100,
+                left: 150,
+                child: Transform(
+                  transform: Matrix4.diagonal3Values(-20, -10, 1),
+                  child: const CircleAvatar(
+                    backgroundColor: Colors.redAccent,
+                  ),
                 ),
-              ],
-            ),
-            SizedBox(height: spacingHeight),
-            Text(
-              "Bem-vindo ao Restaurante Gula!",
-              style: themeData.textTheme.titleMedium?.copyWith(
-                fontSize: 38,
-                fontWeight: FontWeight.bold,
               ),
-            ),
-            SizedBox(height: spacingHeight),
-            Container(
-              decoration: BoxDecoration(
-                color: const Color.fromRGBO(244, 242, 240, 1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: const EdgeInsets.only(right: 20),
-              child: Row(
+              Column(
                 children: [
-                  SizedBox(
-                    width: 48,
-                    child: IconButton(
-                      onPressed: () => {},
-                      icon: const Icon(Icons.search),
+                  const HeaderOptionsWidget(),
+                  SizedBox(height: spacingHeight),
+                  Text(
+                    "Bem-vindo ao Restaurante Gula!",
+                    style: themeData.textTheme.titleMedium?.copyWith(
+                      fontSize: 34,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Expanded(
+                  SizedBox(height: spacingHeight),
+                  const SearchWidget(),
+                  SizedBox(height: spacingHeight),
+                  CategoryListWidget(
+                    avaibleHeight: avaibleHeight * 0.065,
+                    avaibleWidth: avaibleWidth * 0.32,
+                  ),
+                  SizedBox(height: spacingHeight),
+                  SingleChildScrollView(
                     child: SizedBox(
-                      height: 20,
-                      child: TextField(
-                        decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "Buscar comida",
-                            hintStyle:
-                                themeData.textTheme.titleMedium?.copyWith(
-                              fontSize: 16,
-                            )),
+                      height: avaibleHeight * 0.45,
+                      width: avaibleWidth,
+                      child: StreamBuilder<List<ProductModel>>(
+                        stream: controller.findAllProducts(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) return const SizedBox();
+
+                          List<ProductModel> data = snapshot.data!;
+
+                          return ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: data.length,
+                            itemBuilder: (ctx, index) {
+                              ProductModel productModel = data[index];
+
+                              return ProductCardWidget(productModel);
+                            },
+                          );
+                        }
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
-            SizedBox(height: spacingHeight),
-            SizedBox(
-              height: avaibleHeight * 0.065,
-              child: ListView.builder(
-                itemCount: 2,
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (ctx, index) {
-                  return Container(
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: const Color.fromRGBO(254, 204, 76, 1),
-                        )),
-                    padding: const EdgeInsets.all(8),
-                    margin: const EdgeInsets.only(right: 20),
-                    width: avaibleWidth * 0.27,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Container(
-                              height: 10,
-                              width: 10,
-                              decoration: BoxDecoration(boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black,
-                                  offset: Offset.fromDirection(1.55, 7),
-                                  blurRadius: 10,
-                                  spreadRadius: 5,
-                                ),
-                              ]),
-                            ),
-                            Image.network(
-                              "https://img.icons8.com/emoji/48/hamburger-emoji.png",
-                            ),
-                          ],
-                        ),
-                        Text(
-                          "Fast Food",
-                          style: themeData.textTheme.titleMedium?.copyWith(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-            SizedBox(height: spacingHeight),
-            Expanded(
-              child: SingleChildScrollView(
-                child: SizedBox(
-                  height: 200,
-                  width: 200,
-                  child: GridView.builder(
-                    scrollDirection: Axis.horizontal,
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 1,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                    ),
-                    itemCount: 2,
-                    itemBuilder: (ctx, index) {
-                      return Container(
-                        color: Colors.red,
-                      );
-                    },
-                  ),
-                ),
-              ),
-            )
-          ],
+            ],
+          ),
         ),
       ),
     );
